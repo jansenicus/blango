@@ -1,8 +1,5 @@
-# 1. import logging module
 import logging
-# 2. create a module level variable
 logger = logging.getLogger(__name__)
-# 3. anywhere throughout the file add logger calls, logger.debug() .info(), etc..
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
@@ -11,7 +8,12 @@ from blog.forms import CommentForm
 
 # Create your views here.
 def index(request):
-  posts = Post.objects.filter(published_at__lte=timezone.now())
+  posts = (
+    Post.objects.filter(published_at__lte=timezone.now())
+                      .select_related("author")
+                      # .only("title", "summary", "content", "author", "published_at", "slug")
+                      .defer("created_at", "modified_at")
+                      )
 
   # after retrieving the Posts from db, log how many they are at DEBUG level
   logger.debug("Got %d posts", len(posts))
@@ -56,3 +58,7 @@ def post_detail(request, slug):
                 "comment_form": comment_form})
 
   
+def get_ip(request):
+  # view to return the IP address that's connected to Django
+  from django.http import HttpResponse
+  return HttpResponse(request.META['REMOTE_ADDR'])
