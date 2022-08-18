@@ -1,3 +1,9 @@
+# 1. import logging module
+import logging
+# 2. create a module level variable
+logger = logging.getLogger(__name__)
+# 3. anywhere throughout the file add logger calls, logger.debug() .info(), etc..
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from blog.models import Post
@@ -6,6 +12,10 @@ from blog.forms import CommentForm
 # Create your views here.
 def index(request):
   posts = Post.objects.filter(published_at__lte=timezone.now())
+
+  # after retrieving the Posts from db, log how many they are at DEBUG level
+  logger.debug("Got %d posts", len(posts))
+
   return render(request, "blog/index.html", {"posts" : posts})
 
 def post_detail(request, slug):
@@ -28,6 +38,11 @@ def post_detail(request, slug):
         comment.content_object = post
         comment.creator = request.user
         comment.save()
+        # log a message when a comment is created
+        logger.info("Createad comment on Post %d for user %s", 
+                    post.pk,
+                    request.user)
+
         # finally, we perform a redirect back to the current Post (this essentially just refreshes the page for the user so they see their new comment).
         return redirect(request.path_info)
     else:
