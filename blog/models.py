@@ -51,3 +51,16 @@ class Post(models.Model):
 #   content = models.TextField()
 #   post = models.ForeignKey(Post, on_delete = models.CASCADE, null=True)
 #   author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+
+class AuthorProfile(models.Model):
+    user = models.OneToOneField(
+      settings.AUTH_USER_MODEL,
+      on_delete=models.CASCADE,
+      related_name="profile"
+    )
+
+    bio = models.TextField()
+
+    def __str__(self):
+      return f"{self.__class__.__name__} object for {self.user}"
+
